@@ -1,0 +1,25 @@
+{
+    "name": "kalakari_chronicles_server",
+    "version": "1.0.0",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/JunaidParkar/kalakari-chronicles-server.git"
+    },
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/JunaidParkar/kalakari-chronicles-server/issues"
+    },
+    "homepage": "https://github.com/JunaidParkar/kalakari-chronicles-server#readme",
+    "description": "",
+    "dependencies": {
+        "dotenv": "^16.4.7",
+        "express": "^4.21.2",
+        "nodemailer": "^6.10.0"
+    }
+}
