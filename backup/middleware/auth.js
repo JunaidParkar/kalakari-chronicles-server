@@ -1,5 +1,5 @@
 // middleware/authMiddleware.js
-import admin from '../config/firebaseConfig.js';
+import admin from '../backup/config/firebaseConfig.js';
 import jwt from 'jsonwebtoken';
 
 // Verify Firebase Token for User Routes

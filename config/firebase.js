@@ -1,9 +1,12 @@
-// config/firebaseConfig.js
-import admin from 'firebase-admin';
-import serviceAccount from '../serviceAccountKey.json'; // Replace with your Firebase service account key
+import admin from 'firebase-admin'
+import { getFirestore } from 'firebase-admin/firestore'
+import { serviceKey } from "../serviceAccountKey.js"
+import { readFileSync } from 'fs'
 
 admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-});
+    credential: admin.credential.cert(serviceKey),
+})
 
-export default admin;
+// const db = getFirestore()
+
+export default admin

@@ -1,29 +1,31 @@
-import express from "express";
-import dotenv from "dotenv";
-import { securityMiddleware } from "./middleware/security.js";
-import productsRoutes from "./routes/products.js";
-import usersRoutes from "./routes/users.js";
+import cluster from 'cluster';
+import os from 'os';
+import { config } from 'dotenv';
+import createApp from './app.js';
 
-dotenv.config();
+config(); // Load environment variables from .env
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
+const NUM_CPUS = os.cpus().length;
+console.log(NUM_CPUS)
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Apply Security Middleware
-securityMiddleware(app);
+if (cluster.isPrimary) {
+    console.log(`Primary ${process.pid} is running`);
 
-// API Routes (🔒 Protected)
-app.use("/api/products", productsRoutes);
-app.use("/api/users", usersRoutes);
+    // Fork workers for each CPU core
+    for (let i = 0; i < NUM_CPUS; i++) {
+        cluster.fork();
+    }
 
-app.get("/", (req, res) => {
-    res.json({ message: "API Server Running!" });
-});
+    cluster.on('exit', (worker, code, signal) => {
+        console.log(`Worker ${worker.process.pid} died. Restarting...`);
+        cluster.fork();
+    });
+} else {
+    const app = createApp();
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+    app.listen(PORT, () => {
+        console.log(`Worker ${process.pid} started on port ${PORT}`);
+    });
+}

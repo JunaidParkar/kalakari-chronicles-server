@@ -2,8 +2,8 @@ import express from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
-import { verifyJWT } from "../middleware/jwtAuth.js";
-import { verifyFirebaseToken } from "../middleware/firebaseAuth.js";
+import { verifyJWT } from "../backup/middleware/jwtAuth.js";
+import { verifyFirebaseToken } from "../backup/middleware/firebaseAuth.js";
 
 dotenv.config();
 const router = express.Router();

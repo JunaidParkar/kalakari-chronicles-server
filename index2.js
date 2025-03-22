@@ -6,15 +6,7 @@ config()
 const app = express();
 app.use(json());
 
-const transporter = nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.BRAVO_EMAIL,
-        pass: process.env.BRAVO_PASSWORD,
-    },
-});
+
 
 app.post("/send-email", async(req, res) => {
     console.log(req.body)
