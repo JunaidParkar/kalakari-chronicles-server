@@ -2,8 +2,9 @@ import express from 'express';
 import helmet from 'helmet';
 import rateLimiter from './middleware/rateLimiter.js';
 // import errorHandler from './middlewares/errorHandler.js';
-import routes from './routes/index.js';
 import cors from './middleware/corsAuth.js'
+import authRoute from './routes/auth.js';
+import adminRoute from './routes/admin.js';
 
 const createApp = () => {
     const app = express();
@@ -21,11 +22,12 @@ const createApp = () => {
     app.use(rateLimiter);
 
     // API routes
-    app.use('/api', routes);
+    app.use('/auth', authRoute);
+    app.use('/admin', adminRoute)
 
     // 404 handler
     app.use((req, res, next) => {
-        res.status(404).json({ error: 'Not Found lol' });
+        res.status(404).json({ error: 'Not Found' });
     });
 
     // Error handling middleware

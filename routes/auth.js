@@ -1,11 +1,10 @@
 import { Router } from "express";
-import { getAuth } from "firebase-admin/auth"; // Correct way to import authentication
 import admin from "../config/firebase.js";
 import { emailVerifyTemplate, transporter } from "../utils/index.js";
 
-const router = Router();
+const authRoute = Router();
 
-router.post("/register", async(req, res) => {
+authRoute.post("/register", async(req, res) => {
     try {
         let userDetails = req.body;
         let user = await admin.auth().createUser(userDetails); // No need to pass `admin`
@@ -15,7 +14,7 @@ router.post("/register", async(req, res) => {
     }
 });
 
-router.post("/sendVerification", async(req, res) => {
+authRoute.post("/sendVerification", async(req, res) => {
     let [userDetails, action] = req.body
     console.log(userDetails)
     console.log(action)
@@ -36,4 +35,4 @@ router.post("/sendVerification", async(req, res) => {
     })
 })
 
-export default router;
+export default authRoute;
