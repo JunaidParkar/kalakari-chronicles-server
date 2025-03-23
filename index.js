@@ -5,7 +5,7 @@ import createApp from './app.js';
 
 config(); // Load environment variables from .env
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 const NUM_CPUS = os.cpus().length;
 console.log(NUM_CPUS)
 
