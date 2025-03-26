@@ -1,3 +1,4 @@
+import fs from 'fs'
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
@@ -56,38 +57,43 @@ adminRoute.post("/login", async(req, res) => {
     // }
 })
 
-adminRoute.post("/addProduct", upload.array("images", 4), async(req, res) => {
+adminRoute.post("/addProduct", upload, async(req, res) => {
     try {
-        const { productName, price, madeBy, description } = req.body;
-        const imageFiles = req.files; // Uploaded images
+        const { name, price, madeBy, description } = req.body;
+        const imageFiles = Object.values(req.files).flat(); // Convert object to an array  // Uploaded images
         console.log(imageFiles)
 
-        if (!productName || !price || !madeBy || !description) {
+        if (!name || !price || !madeBy || !description) {
             return res.status(400).json({ error: "All fields are required" });
         }
         if (!imageFiles || imageFiles.length === 0) {
             return res.status(400).json({ error: "At least one image is required" });
         }
 
+        // let image1 =
+
         // Upload each image to Cloudinary and get URLs
+        let secureURL = []
         const uploadedImages = await Promise.all(
             imageFiles.map(async(file) => {
                 const result = await cloudinary.uploader.upload(file.path, {
-                    folder: "ecommerce_products",
-                    transformation: [{ width: 500, height: 500, crop: "limit" }],
-                });
-                fs.unlinkSync(file.path); // Remove temp file
-                return result.secure_url;
+                    folder: "products"
+                }).then(d => {
+                    secureURL.push(d.secure_url)
+                }).catch(e => res.status(500).json({ error: "Storage unreachable at the moment. Please try again later." }))
+                fs.unlinkSync(file.path);
             })
         );
 
+        uploadedImages
+
         // Response with Cloudinary image URLs and form data
         res.json({
-            productName,
+            name,
             price,
             madeBy,
             description,
-            images: uploadedImages,
+            images: secureURL,
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

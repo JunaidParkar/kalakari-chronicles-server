@@ -2,7 +2,7 @@
 import cors from 'cors';
 
 const corsOptions = {
-    origin: process.env.CLIENT_URL || 'https://your-nextjs-app.firebaseapp.com', // Replace with your Firebase-hosted URL
+    origin: process.env.CLIENT_URL || '*', // Replace with your Firebase-hosted URL
     optionsSuccessStatus: 200,
 };
 
