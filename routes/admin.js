@@ -3,7 +3,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import admin from "../config/firebase.js";
-import { upload } from "../utils/index.js"
+import { addCategory, getCategories, upload } from "../utils/index.js"
 import cloudinary from "../config/cloudinary.js";
 
 const adminRoute = Router();
@@ -62,7 +62,7 @@ adminRoute.post("/addProduct", upload, async(req, res) => {
         const { name, price, madeBy, description, category } = req.body;
         const imageFiles = Object.values(req.files).flat();
 
-        if (!name || !price || !madeBy || !description) {
+        if (!name || !price || !madeBy || !description || !category) {
             return res.status(400).json({ error: "All fields are required" });
         }
         if (!imageFiles || imageFiles.length === 0) {
@@ -95,12 +95,15 @@ adminRoute.post("/addProduct", upload, async(req, res) => {
             return res.status(500).json({ error: "Failed to upload any images. Please try again. Please delete the post and try again later." });
         }
 
+        await addCategory(category)
+
         const productRef = admin.firestore().collection("products").doc();
         await productRef.set({
             name,
             price,
             description,
             madeBy,
+            category,
             images: secureURLs.map((img) => img.url),
             image_public_ids: secureURLs.map((img) => img.public_id),
             createdAt: new Date().toISOString(),
@@ -131,7 +134,9 @@ adminRoute.post("/getProduct", async(req, res) => {
 
 adminRoute.post("/getCategories", async(req, res) => {
     admin.database().ref("categories").get().then(data => {
-        res.status(200).json({ categories: data })
+        res.status(200).json({ categories: data.val() })
+    }).catch(() => {
+        res.status(500).json({ message: "Unable to load the category list..." })
     })
 })
 
