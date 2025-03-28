@@ -59,9 +59,8 @@ adminRoute.post("/login", async(req, res) => {
 
 adminRoute.post("/addProduct", upload, async(req, res) => {
     try {
-        const { name, price, madeBy, description } = req.body;
-        const imageFiles = Object.values(req.files).flat(); // Convert object to an array  // Uploaded images
-        console.log(imageFiles)
+        const { name, price, madeBy, description, category } = req.body;
+        const imageFiles = Object.values(req.files).flat();
 
         if (!name || !price || !madeBy || !description) {
             return res.status(400).json({ error: "All fields are required" });
@@ -70,34 +69,70 @@ adminRoute.post("/addProduct", upload, async(req, res) => {
             return res.status(400).json({ error: "At least one image is required" });
         }
 
-        // let image1 =
+        let secureURLs = [];
+        let uploadErrors = [];
 
-        // Upload each image to Cloudinary and get URLs
-        let secureURL = []
-        const uploadedImages = await Promise.all(
+        await Promise.all(
             imageFiles.map(async(file) => {
-                const result = await cloudinary.uploader.upload(file.path, {
-                    folder: "products"
-                }).then(d => {
-                    secureURL.push(d.secure_url)
-                }).catch(e => res.status(500).json({ error: "Storage unreachable at the moment. Please try again later." }))
-                fs.unlinkSync(file.path);
+                try {
+                    const result = await cloudinary.uploader.upload(file.path, {
+                        folder: "products",
+                    });
+
+                    secureURLs.push({
+                        url: result.secure_url,
+                        public_id: result.public_id,
+                    });
+                } catch (error) {
+                    uploadErrors.push(file.path);
+                } finally {
+                    fs.unlinkSync(file.path);
+                }
             })
         );
 
-        uploadedImages
+        if (secureURLs.length === 0) {
+            return res.status(500).json({ error: "Failed to upload any images. Please try again. Please delete the post and try again later." });
+        }
 
-        // Response with Cloudinary image URLs and form data
+        const productRef = admin.firestore().collection("products").doc();
+        await productRef.set({
+            name,
+            price,
+            description,
+            madeBy,
+            images: secureURLs.map((img) => img.url),
+            image_public_ids: secureURLs.map((img) => img.public_id),
+            createdAt: new Date().toISOString(),
+        });
+
         res.json({
+            id: productRef.id,
             name,
             price,
             madeBy,
             description,
-            images: secureURL,
+            images: secureURLs,
         });
+
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
+
+adminRoute.post("/getProduct", async(req, res) => {
+    let id = req.body.id
+    admin.firestore().collection("products").doc(id).get().then(data => {
+        res.status(200).json({ product: data.data() })
+    }).catch(e => {
+        res.status(500).json({ message: e })
+    })
+})
+
+adminRoute.post("/getCategories", async(req, res) => {
+    admin.database().ref("categories").get().then(data => {
+        res.status(200).json({ categories: data })
+    })
+})
 
 export default adminRoute
