@@ -23,12 +23,16 @@ const storage = multer.diskStorage({
     },
 });
 
-export const upload = multer({ storage }).fields([
+export const uploadImageMulter = multer({ storage }).fields([
     { name: "image1", maxCount: 1 },
     { name: "image2", maxCount: 1 },
     { name: "image3", maxCount: 1 },
     { name: "image4", maxCount: 1 },
 ]);
+
+// let data = [{ newImage, replaceImageID }, { newImage, replaceImageID }]
+
+export const editUploadMulter = multer({ storage }).array("newImages", 4);
 
 export const getCategories = async() => {
     try {

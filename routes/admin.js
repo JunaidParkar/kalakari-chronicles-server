@@ -3,7 +3,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import admin from "../config/firebase.js";
-import { addCategory, getCategories, upload } from "../utils/index.js"
+import { addCategory, getCategories, uploadImageMulter } from "../utils/index.js"
 import cloudinary from "../config/cloudinary.js";
 
 const adminRoute = Router();
@@ -57,7 +57,7 @@ adminRoute.post("/login", async(req, res) => {
     // }
 })
 
-adminRoute.post("/addProduct", upload, async(req, res) => {
+adminRoute.post("/addProduct", uploadImageMulter, async(req, res) => {
     try {
         const { name, price, madeBy, description, category } = req.body;
         const imageFiles = Object.values(req.files).flat();
@@ -139,5 +139,7 @@ adminRoute.post("/getCategories", async(req, res) => {
         res.status(500).json({ message: "Unable to load the category list..." })
     })
 })
+
+adminRoute.post("/editProduct")
 
 export default adminRoute
