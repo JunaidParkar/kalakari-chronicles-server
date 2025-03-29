@@ -142,8 +142,8 @@ adminRoute.post("/getCategories", async(req, res) => {
 
 adminRoute.post("/editProduct", editUploadMulter, async(req, res) => {
     const b = req.body;
-    const imageFiles = Object.values(req.files).flat();
-    res.json({ f: imageFiles, b })
+    // const imageFiles = Object.values(req.files).flat();
+    res.json({ f: req.files, b })
 })
 
 export default adminRoute
