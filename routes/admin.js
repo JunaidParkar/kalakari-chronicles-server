@@ -3,7 +3,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import admin from "../config/firebase.js";
-import { addCategory, getCategories, uploadImageMulter } from "../utils/index.js"
+import { addCategory, editUploadMulter, getCategories, uploadImageMulter } from "../utils/index.js"
 import cloudinary from "../config/cloudinary.js";
 
 const adminRoute = Router();
@@ -140,6 +140,10 @@ adminRoute.post("/getCategories", async(req, res) => {
     })
 })
 
-adminRoute.post("/editProduct")
+adminRoute.post("/editProduct", editUploadMulter, async(req, res) => {
+    const b = req.body;
+    const imageFiles = Object.values(req.files).flat();
+    res.json({ f: imageFiles, b })
+})
 
 export default adminRoute
