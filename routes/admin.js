@@ -3,7 +3,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import admin from "../config/firebase.js";
-import { addCategory, editUploadMulter, getCategories, uploadImageMulter } from "../utils/index.js"
+import { addCategory, editUploadMulter, getCategories, uploadImageMulter, uploadToCloudinary } from "../utils/index.js"
 import cloudinary from "../config/cloudinary.js";
 
 const adminRoute = Router();
@@ -75,9 +75,7 @@ adminRoute.post("/addProduct", uploadImageMulter, async(req, res) => {
         await Promise.all(
             imageFiles.map(async(file) => {
                 try {
-                    const result = await cloudinary.uploader.upload(file.path, {
-                        folder: "products",
-                    });
+                    const result = await uploadToCloudinary(file, "products")
 
                     secureURLs.push({
                         url: result.secure_url,

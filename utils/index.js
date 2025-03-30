@@ -1,6 +1,7 @@
 import multer from 'multer';
 import nodemailer from 'nodemailer'
 import admin from '../config/firebase.js';
+import cloudinary from '../config/cloudinary.js';
 
 export const transporter = nodemailer.createTransport({
     host: "smtp-relay.brevo.com",
@@ -32,7 +33,14 @@ export const uploadImageMulter = multer({ storage }).fields([
 
 // let data = [{ newImage, replaceImageID }, { newImage, replaceImageID }]
 
-export const editUploadMulter = multer({ storage }).array("newImages", 4);
+export const editUploadMulter = multer({ storage }).array("images", 4);
+
+export const uploadToCloudinary = async(file, folder) => {
+    let result = await cloudinary.uploader.upload(file.path, { folder: folder });
+    return result
+}
+
+export const deleteImageFromCloudinary = async(ids) => {}
 
 export const getCategories = async() => {
     try {
@@ -42,7 +50,6 @@ export const getCategories = async() => {
         return [false, "Unable to fetch categories."]; // Return error message if it fails
     }
 };
-
 
 export const addCategory = async(category) => {
     let allCat = await getCategories();
