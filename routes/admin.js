@@ -3,7 +3,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken'
 import admin from "../config/firebase.js";
-import { addCategory, editUploadMulter, getCategories, uploadImageMulter, uploadToCloudinary } from "../utils/index.js"
+import { addCategory, deleteImageFromCloudinary, editUploadMulter, getCategories, uploadImageMulter, uploadToCloudinary } from "../utils/index.js"
 import cloudinary from "../config/cloudinary.js";
 
 const adminRoute = Router();
@@ -140,7 +140,37 @@ adminRoute.post("/getCategories", async(req, res) => {
 
 adminRoute.post("/editProduct", editUploadMulter, async(req, res) => {
     const b = req.body;
-    // const imageFiles = Object.values(req.files).flat();
+    let updatedURL = []
+    try {
+        console.log(req.file)
+        if (req.files.length > 0) {
+            console.log("hi")
+            await deleteImageFromCloudinary(req.body.id_to_replace)
+            req.files.map(async(file) => {
+                let uploadData = await uploadToCloudinary(file.path, "products")
+                updatedURL.push({ url: uploadData.secure_url, id: uploadData.public_id })
+            })
+        }
+        let updateFields = {}
+        if (req.body.name) {
+            updateFields.name = req.body.name
+        }
+        if (req.body.price) {
+            updateFields.price = req.body.price
+        }
+        if (req.body.category) {
+            updateFields.category = req.body.category
+        }
+        if (req.body.description) {
+            updateFields.description = req.body.description
+        }
+        if (req.body.madeBy) {
+            updateFields.madeBy = req.body.madeBy
+        }
+        if (updatedURL.length > 0) {}
+    } catch (error) {
+        console.log(error)
+    }
     res.json({ f: req.files, b })
 })
 

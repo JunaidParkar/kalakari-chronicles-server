@@ -40,7 +40,10 @@ export const uploadToCloudinary = async(file, folder) => {
     return result
 }
 
-export const deleteImageFromCloudinary = async(ids) => {}
+export const deleteImageFromCloudinary = async(ids) => {
+    let result = await cloudinary.api.delete_resources(ids, { type: 'upload', resource_type: 'image' })
+    return result
+}
 
 export const getCategories = async() => {
     try {
