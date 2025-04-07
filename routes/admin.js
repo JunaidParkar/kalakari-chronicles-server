@@ -152,6 +152,8 @@ adminRoute.post("/editProduct", editUploadMulter, async(req, res) => {
             })
         }
         let updateFields = {}
+        let ref = admin.firestore().doc(req.body.id)
+        let existing_data = await ref.get().data()
         if (req.body.name) {
             updateFields.name = req.body.name
         }
@@ -167,7 +169,16 @@ adminRoute.post("/editProduct", editUploadMulter, async(req, res) => {
         if (req.body.madeBy) {
             updateFields.madeBy = req.body.madeBy
         }
-        if (updatedURL.length > 0) {}
+        if (updatedURL.length > 0) {
+            updateFields.id = existing_data.image_public_ids
+            let indices = []
+            req.body.id_to_replace.forEach((id, index) => {
+                let id_main = updateFields.id.indexOf(id)
+                updateFields.id[id_main] = id
+                updateFields.images[id_main] = updatedURL
+            });
+            updateFields.images = existing_data.images
+        }
     } catch (error) {
         console.log(error)
     }
