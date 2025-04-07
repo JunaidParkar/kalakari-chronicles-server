@@ -140,49 +140,78 @@ adminRoute.post("/getCategories", async(req, res) => {
 
 adminRoute.post("/editProduct", editUploadMulter, async(req, res) => {
     const b = req.body;
-    let updatedURL = []
+    let updatedURL = [];
+
     try {
-        console.log(req.file)
-        if (req.files.length > 0) {
-            console.log("hi")
-            await deleteImageFromCloudinary(req.body.id_to_replace)
-            req.files.map(async(file) => {
-                let uploadData = await uploadToCloudinary(file.path, "products")
-                updatedURL.push({ url: uploadData.secure_url, id: uploadData.public_id })
-            })
+        console.log("Files received:", req.files);
+
+        if (req.files && req.files.length > 0) {
+            console.log("Uploading new files...");
+
+            // Delete old images
+            await deleteImageFromCloudinary(req.body.id_to_replace);
+
+            for (let file of req.files) {
+                console.log(file.path)
+                const uploadData = await uploadToCloudinary(file.path, "products");
+                updatedURL.push({ url: uploadData.secure_url, id: uploadData.public_id });
+            }
         }
-        let updateFields = {}
-        let ref = admin.firestore().doc(req.body.id)
-        let existing_data = await ref.get().data()
-        if (req.body.name) {
-            updateFields.name = req.body.name
-        }
-        if (req.body.price) {
-            updateFields.price = req.body.price
-        }
-        if (req.body.category) {
-            updateFields.category = req.body.category
-        }
-        if (req.body.description) {
-            updateFields.description = req.body.description
-        }
-        if (req.body.madeBy) {
-            updateFields.madeBy = req.body.madeBy
-        }
+
+        const updateFields = {};
+        const ref = admin.firestore().doc(`products/${req.body.id}`);
+        const existing_data = (await ref.get()).data();
+
+        if (req.body.name) updateFields.name = req.body.name;
+        if (req.body.price) updateFields.price = req.body.price;
+        if (req.body.category) updateFields.category = req.body.category;
+        if (req.body.description) updateFields.description = req.body.description;
+        if (req.body.madeBy) updateFields.madeBy = req.body.madeBy;
+
         if (updatedURL.length > 0) {
-            updateFields.id = existing_data.image_public_ids
-            let indices = []
-            req.body.id_to_replace.forEach((id, index) => {
-                let id_main = updateFields.id.indexOf(id)
-                updateFields.id[id_main] = id
-                updateFields.images[id_main] = updatedURL
+            updateFields.image_public_ids = [...existing_data.image_public_ids];
+            updateFields.images = [...existing_data.images];
+            console.log(req.body.id_to_replace)
+            const idsToReplace = Array.isArray(req.body.id_to_replace) ?
+                req.body.id_to_replace : [req.body.id_to_replace]; // convert single string to array
+
+            idsToReplace.forEach((id, index) => {
+                const id_main = updateFields.image_public_ids.indexOf(id);
+                if (id_main !== -1) {
+                    updateFields.image_public_ids[id_main] = updatedURL[index].id;
+                    updateFields.images[id_main] = updatedURL[index].url;
+                }
             });
-            updateFields.images = existing_data.images
+        }
+
+        if (Object.keys(updateFields).length > 0) {
+            await ref.update(updateFields);
+            return res.status(200).json({ message: "Success" });
+        } else {
+            return res.status(400).json({ message: "No data available to update" });
         }
     } catch (error) {
-        console.log(error)
+        console.error("Update error:", error);
+        return res.status(500).json({ message: "Error while updating product", error });
     }
-    res.json({ f: req.files, b })
-})
+});
+
+adminRoute.post("/allProducts", async(req, res) => {
+    try {
+        const snapshot = await admin.firestore().collection("products").get();
+
+        const newData = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+
+        res.status(200).json({ data: newData });
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).json({ message: "Unable to get data." });
+    }
+});
+
+
 
 export default adminRoute

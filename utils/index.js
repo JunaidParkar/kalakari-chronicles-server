@@ -36,7 +36,7 @@ export const uploadImageMulter = multer({ storage }).fields([
 export const editUploadMulter = multer({ storage }).array("images", 4);
 
 export const uploadToCloudinary = async(file, folder) => {
-    let result = await cloudinary.uploader.upload(file.path, { folder: folder });
+    let result = await cloudinary.uploader.upload(file, { folder: folder });
     return result
 }
 
