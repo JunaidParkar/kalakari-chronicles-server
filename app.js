@@ -5,6 +5,7 @@ import rateLimiter from './middleware/rateLimiter.js';
 import cors from './middleware/corsAuth.js'
 import authRoute from './routes/auth.js';
 import adminRoute from './routes/admin.js';
+import localRoute from './routes/local.js';
 
 const createApp = () => {
     const app = express();
@@ -24,6 +25,7 @@ const createApp = () => {
     // API routes
     app.use('/auth', authRoute);
     app.use('/admin', adminRoute)
+    app.use("/local", localRoute)
 
     // 404 handler
     app.use((req, res, next) => {

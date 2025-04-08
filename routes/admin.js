@@ -75,13 +75,14 @@ adminRoute.post("/addProduct", uploadImageMulter, async(req, res) => {
         await Promise.all(
             imageFiles.map(async(file) => {
                 try {
-                    const result = await uploadToCloudinary(file, "products")
+                    const result = await uploadToCloudinary(file.path, "products")
 
                     secureURLs.push({
                         url: result.secure_url,
                         public_id: result.public_id,
                     });
                 } catch (error) {
+                    console.log(error)
                     uploadErrors.push(file.path);
                 } finally {
                     fs.unlinkSync(file.path);
